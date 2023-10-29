@@ -4,10 +4,5 @@ go 1.21.3
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/machinebox/graphql v0.2.2
-)
-
-require (
-	github.com/matryer/is v1.4.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466
 )

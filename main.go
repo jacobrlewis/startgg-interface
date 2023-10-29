@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/machinebox/graphql"
 )
 
 func main() {
@@ -16,11 +15,8 @@ func main() {
 		log.Fatal("Error loading .env file", err)
 	}
 
-	client := graphql.NewClient("https://api.start.gg/gql/alpha")
-	gql := startgg.GQLClient{Client: *client, Bearer: "Bearer " + os.Getenv("api_key")}
-	// gql.GetSets(904060, 1, 1)
-	// gql.GetEventName(904060)
+	client := startgg.CreateClient(os.Getenv("api_key"))
 
-	id := gql.GetTournamentIdFromSlug("genesis-x")
+	id := client.GetTournamentIdFromSlug("genesis-x")
 	log.Println(id)
 }

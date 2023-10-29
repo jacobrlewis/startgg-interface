@@ -2,75 +2,58 @@ package startgg
 
 import (
 	"context"
-	"log"
+	"net/http"
 
-	"github.com/machinebox/graphql"
+	"github.com/shurcooL/graphql"
 )
 
-type GQLClient struct {
-	Client graphql.Client
-	Bearer string
+type SGGClient struct {
+	Client *graphql.Client
 }
 
-func (gql GQLClient) GetSets(eventId int, page int, perPage int) Event {
-
-	query := EventSets
-
-	request := graphql.NewRequest(query)
-	request.Header.Add("Authorization", gql.Bearer)
-	request.Var("eventId", eventId)
-	request.Var("page", page)
-	request.Var("perPage", perPage)
-
-	var response struct {
-		Event Event
+// CreateClient returns a SGGClient containing an authenticated graphql Client
+func CreateClient(token string) SGGClient {
+	httpClient := &http.Client{
+		Transport: &authTransport{
+			Token: token,
+		},
 	}
-	err := gql.Client.Run(context.Background(), request, &response)
+	c := graphql.NewClient("https://api.start.gg/gql/alpha", httpClient)
+
+	return SGGClient{Client: c}
+}
+
+// =====================
+// Queries
+// =====================
+
+// GetTournamentIdFromSlug returns the tournament Id given the friendly url string
+func (c SGGClient) GetTournamentIdFromSlug(slug string) int {
+	var query struct {
+		Tournament Tournament `graphql:"tournament(slug: $slug)"`
+	}
+	variables := map[string]any{
+		"slug": graphql.String(slug),
+	}
+
+	err := c.Client.Query(context.Background(), &query, variables)
+
 	if err != nil {
 		panic(err)
 	}
 
-	return response.Event
+	return query.Tournament.Id
 }
 
-func (gql GQLClient) GetEventName(eventId int) Event {
-	query := EventName
-
-	request := graphql.NewRequest(query)
-	request.Header.Add("Authorization", gql.Bearer)
-	request.Var("eventId", eventId)
-
-	var response struct {
-		Event Event
-	}
-	err := gql.Client.Run(context.Background(), request, &response)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Print(response)
-	return response.Event
+// authTransport is a custom transport that adds the "Authorization" header to every request.
+type authTransport struct {
+	Token string
 }
 
-func (gql GQLClient) GetTournamentIdFromSlug(slug string) int {
-	query := TournamentIdFromSlug
+func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Add the "Authorization" header to the request
+	req.Header.Set("Authorization", "Bearer "+t.Token)
 
-	request := graphql.NewRequest(query)
-	request.Header.Add("Authorization", gql.Bearer)
-	request.Var("slug", slug)
-
-	var response struct {
-		Tournament Tournament
-	}
-
-	err := gql.Client.Run(context.Background(), request, &response)
-	if err != nil {
-		panic(err)
-	}
-
-	return response.Tournament.Id
-}
-
-func (gql GQLClient) GetTop8Contestants() {
-	// TODO
+	// Use the default transport to execute the request
+	return http.DefaultTransport.RoundTrip(req)
 }
