@@ -3,6 +3,7 @@ package startgg
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/shurcooL/graphql"
 )
@@ -30,7 +31,9 @@ func CreateClient(token string) SGGClient {
 // GetTournamentIdFromSlug returns the tournament Id given the friendly url string
 func (c SGGClient) GetTournamentIdFromSlug(slug string) int {
 	var query struct {
-		Tournament Tournament `graphql:"tournament(slug: $slug)"`
+		Tournament struct {
+			Id int
+		} `graphql:"tournament(slug: $slug)"`
 	}
 	variables := map[string]any{
 		"slug": graphql.String(slug),
@@ -43,6 +46,40 @@ func (c SGGClient) GetTournamentIdFromSlug(slug string) int {
 	}
 
 	return query.Tournament.Id
+}
+
+// GetTop8 returns a list of the Top 8 sets in a given event
+func (c SGGClient) GetTop8(eventId int) []Node {
+	var query struct {
+		Event struct {
+			Name string
+			Sets struct {
+				Nodes []Node
+			} `graphql:"sets(page: $page, perPage: $perPage, sortType: STANDARD)"`
+		} `graphql:"event(id: $eventId)"`
+	}
+	variables := map[string]any{
+		"eventId": graphql.ID(strconv.Itoa(eventId)),
+		"page":    graphql.Int(1),
+		// 11 possible sets, including GF reset
+		"perPage": graphql.Int(11),
+	}
+
+	err := c.Client.Query(context.Background(), &query, variables)
+
+	if err != nil {
+		panic(err)
+	}
+
+	sets := make([]Node, 0, 11)
+	// only include sets where loser places top 8
+	for _, node := range query.Event.Sets.Nodes {
+		if node.LPlacement < 8 {
+			sets = append(sets, node)
+		}
+	}
+
+	return sets
 }
 
 // authTransport is a custom transport that adds the "Authorization" header to every request.

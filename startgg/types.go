@@ -11,8 +11,10 @@ type Slot struct {
 }
 
 type Node struct {
-	Id    int
-	Slots []Slot
+	Id            int    `json:"id"`
+	LPlacement    int    `json:"lPlacement"`
+	FullRoundText string `json:"fullRoundText"`
+	DisplayScore  string `json:"displayScore"`
 }
 
 type Set struct {
@@ -30,6 +32,6 @@ type Event struct {
 }
 
 type Tournament struct {
-	Id int
+	Id   int
 	Name string
 }

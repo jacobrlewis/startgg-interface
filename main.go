@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"jacobrlewis/startgg-interface/startgg"
 	"log"
 	"os"
@@ -18,5 +19,8 @@ func main() {
 	client := startgg.CreateClient(os.Getenv("api_key"))
 
 	id := client.GetTournamentIdFromSlug("genesis-x")
-	log.Println(id)
+	fmt.Println(id)
+
+	nodes := client.GetTop8(727876)
+	fmt.Print(nodes)
 }
