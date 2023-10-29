@@ -18,6 +18,9 @@ func main() {
 
 	client := graphql.NewClient("https://api.start.gg/gql/alpha")
 	gql := startgg.GQLClient{Client: *client, Bearer: "Bearer " + os.Getenv("api_key")}
-	gql.GetSets(904060, 1, 1)
-	gql.GetEventName(904060)
+	// gql.GetSets(904060, 1, 1)
+	// gql.GetEventName(904060)
+
+	id := gql.GetTournamentIdFromSlug("genesis-x")
+	log.Println(id)
 }

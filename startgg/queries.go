@@ -34,3 +34,11 @@ query EventName($eventId: ID) {
   }
   
 `
+
+var TournamentIdFromSlug = `
+query TournamentIdFromSlug($slug: String) {
+	tournament(slug: $slug){
+		id
+		name
+	}
+}`

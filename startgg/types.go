@@ -23,10 +23,13 @@ type Set struct {
 	}
 }
 
-type EventResponse struct {
-	Event struct {
-		Id   int
-		Name string `json:"name"`
-		Sets Set
-	}
+type Event struct {
+	Id   int
+	Name string `json:"name"`
+	Sets Set
+}
+
+type Tournament struct {
+	Id int
+	Name string
 }
